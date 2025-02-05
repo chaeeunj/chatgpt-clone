@@ -26,9 +26,33 @@ export const conversation = pgTable('conversation', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-export const conversationRelations = relations(conversation, ({ one }) => ({
-  user: one(user, {
-    fields: [conversation.userId],
-    references: [user.id],
+export const conversationRelations = relations(
+  conversation,
+  ({ one, many }) => ({
+    user: one(user, {
+      fields: [conversation.userId],
+      references: [user.id],
+    }),
+
+    message: many(message),
+  })
+);
+
+export const message = pgTable('message', {
+  id: uuid('id').defaultRandom().notNull().primaryKey(),
+  content: text('content'),
+  role: text('role').$type<'user' | 'assistant'>(),
+  conversationId: uuid('conversationId')
+    .references(() => conversation.id, { onDelete: 'cascade' })
+    .notNull(),
+
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const messageRelations = relations(message, ({ one }) => ({
+  conversation: one(conversation, {
+    fields: [message.conversationId],
+    references: [conversation.id],
   }),
 }));
