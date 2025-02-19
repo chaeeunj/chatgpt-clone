@@ -1,15 +1,19 @@
 'use client';
+import { ChangeEvent, useEffect } from 'react';
+import { useFormState } from 'react-dom';
+import { signUp } from '@/actions/signup';
 import { FormCard } from './FormCard';
 import { Submit } from './Submit';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { ChangeEvent } from 'react';
 import { useFormValidate } from '@/hooks/useFormValidate';
 import { SignUpSchema } from '@/schemas/auth';
 import { TSignUpFormError } from '@/types/form';
 import { FormMessage } from './FormMessage';
+import toast from 'react-hot-toast';
 
 export function SignUpForm() {
+  const [error, action] = useFormState(signUp, undefined);
   const { errors, validateField } =
     useFormValidate<TSignUpFormError>(SignUpSchema);
 
@@ -18,12 +22,18 @@ export function SignUpForm() {
     validateField(name, value);
   };
 
+  useEffect(() => {
+    if (error?.errorMessage) {
+      toast.error(error.errorMessage);
+    }
+  }, [error]);
+
   console.log(errors);
   return (
     <FormCard
       title="회원가입"
       footer={{ label: '이미 계정이 있으신가요?', href: 'login' }}>
-      <form className="space-y-6">
+      <form action={action} className="space-y-6">
         {/* 이름 */}
         <div className="space-y-1">
           <Label htmlFor="name">이름</Label>
